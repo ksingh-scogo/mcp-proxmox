@@ -45,8 +45,10 @@ const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: customFormat,
   transports: [
-    // Console transport for development
+    // Console transport for development - MUST use stderr for MCP compatibility
+    // MCP servers communicate via stdin/stdout, so all logs must go to stderr
     new winston.transports.Console({
+      stderrLevels: ['error', 'warn', 'info', 'debug'], // Force ALL logs to stderr
       format: winston.format.combine(
         winston.format.colorize(),
         customFormat

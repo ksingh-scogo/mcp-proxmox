@@ -84,8 +84,18 @@ case "$COMMAND" in
         ;;
 
     logs)
-        print_info "Showing container logs (Ctrl+C to exit)..."
-        docker-compose -f "$SCRIPT_DIR/docker-compose.yml" logs -f
+        print_info "Showing MCP server logs from /app/logs/combined.log (Ctrl+C to exit)..."
+        print_info "Note: These are the actual MCP server operation logs"
+        docker exec proxmox-mcp-server tail -f /app/logs/combined.log | while IFS= read -r line; do
+            echo "$line" | python3 -m json.tool 2>/dev/null || echo "$line"
+        done
+        ;;
+
+    viewlogs)
+        print_info "Viewing recent MCP server logs..."
+        docker exec proxmox-mcp-server tail -50 /app/logs/combined.log | while IFS= read -r line; do
+            echo "$line" | python3 -m json.tool 2>/dev/null || echo "$line"
+        done
         ;;
 
     status)
@@ -165,7 +175,8 @@ case "$COMMAND" in
         echo "  start          Start the container"
         echo "  stop           Stop the container"
         echo "  restart        Restart the container"
-        echo "  logs           Show container logs (follow mode)"
+        echo "  logs           Tail MCP server logs in real-time (follow mode)"
+        echo "  viewlogs       View recent MCP server logs (last 50 lines)"
         echo "  status         Show container status"
         echo "  shell          Open shell in container"
         echo "  test           Test MCP server (list tools)"
